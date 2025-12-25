@@ -70,6 +70,7 @@ function render(){
     let d=document.createElement("div");
     d.className="node "+(p.status==="dead"?"dead":"alive");
     d.innerHTML=`${p.name}`;
+    d.onclick=()=>alert("Public view only");
     tree.appendChild(d);
   });
 }
@@ -120,6 +121,18 @@ if(location.hash){
 }
 
 console.log("Digital Banshawali loaded OK");
+</script>
+<script>
+window.addEventListener("load",()=>{
+  if(location.hash){
+    let id=location.hash.replace("#","");
+    let node=document.querySelector(`[data-id='${id}']`);
+    if(node){
+      node.style.outline="4px solid green";
+      node.scrollIntoView({behavior:"smooth",block:"center"});
+    }
+  }
+});
 </script>
 
 </body>
