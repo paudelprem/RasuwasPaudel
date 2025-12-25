@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ne">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Rasuwa Paudel – Digital Banshawali (Public)</title>
+
+<style>
+body{margin:0;font-family:system-ui;background:#f6f3ec}
+header{
+  padding:12px 16px;
+  background:#efe8dc;
+  border-bottom:1px solid #d6c9b6;
+  display:flex;gap:10px;align-items:center;font-weight:600
+}
+header input{
+  padding:6px;border-radius:6px;border:1px solid #ccc
+}
+button{
+  padding:6px 12px;border:0;border-radius:6px;
+  background:#b36b2f;color:#fff;cursor:pointer
+}
+#treeWrap{padding:20px}
+.node{
+  display:inline-block;
+  padding:8px 12px;
+  margin:6px;
+  border:1px solid #cbb79f;
+  border-radius:10px;
+  background:#fff;
+}
+.node.alive::after{content:" 🟢"}
+.node.dead::after{content:" ⚫"}
+
+@media print{
+  header{display:none}
+}
+</style>
+</head>
+
+<body>
+
+<header>
+🌳 Digital Banshawali (Public)
+<input id="search" placeholder="नाम खोज्नुहोस्..." oninput="searchName(this.value)">
+<button onclick="window.print()">Print</button>
+</header>
+
+<div id="treeWrap">
+  <div id="tree"></div>
+</div>
+
+<script>
+/* LOAD DATA */
+let persons = JSON.parse(localStorage.getItem("banshawali")||"{}");
+
+if(Object.keys(persons).length===0){
+  document.getElementById("tree").innerHTML =
+   "<p>हाल सार्वजनिक गर्न मिल्ने डाटा छैन ।</p>";
+}
+
+/* RENDER TREE (flat public view) */
+function render(){
+  tree.innerHTML="";
+  Object.values(persons).forEach(p=>{
+    let d=document.createElement("div");
+    d.className="node "+(p.status==="dead"?"dead":"alive");
+    d.innerText=p.name||"-";
+    d.onclick=()=>location.hash=p.id;
+    tree.appendChild(d);
+  });
+}
+render();
+
+/* SEARCH */
+function searchName(q){
+  document.querySelectorAll(".node").forEach(n=>{
+    n.style.outline="";
+    if(q && n.innerText.includes(q)){
+      n.style.outline="3px solid orange";
+      n.scrollIntoView({behavior:"smooth",block:"center"});
+    }
+  });
+}
+
+/* SHARE LINK */
+if(location.hash){
+  let id=location.hash.replace("#","");
+  let node=[...document.querySelectorAll(".node")]
+    .find(n=>n.innerText===persons[id]?.name);
+  if(node){
+    node.style.outline="4px solid green";
+    node.scrollIntoView({behavior:"smooth",block:"center"});
+  }
+}
+</script>
+
+</body>
+</html>
