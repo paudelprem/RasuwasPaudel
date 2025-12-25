@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ne">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Digital Banshawali – Public</title>
+
+<style>
+body{margin:0;font-family:system-ui;background:#f6f3ec}
+header{
+  display:flex;gap:8px;align-items:center;
+  padding:10px 14px;background:#efe8dc;
+  border-bottom:1px solid #d6c9b6;font-weight:600
+}
+header button{background:#b36b2f;color:#fff;border:0;
+  padding:6px 12px;border-radius:6px;cursor:pointer}
+header button.gray{background:#777}
+#treeWrap{height:calc(100vh - 56px);overflow:auto;padding:20px}
+.node{
+  display:inline-block;
+  border:1px solid #cbb79f;
+  border-radius:10px;
+  padding:8px 12px;
+  background:#fff;
+  margin:6px;
+  cursor:pointer;
+}
+.node.alive::after{content:" 🟢"}
+.node.dead::after{content:" ⚫"}
+.hide-photo img{display:none}
+.node img{width:50px;height:50px;border-radius:50%;display:block;margin:auto}
+.row{text-align:center}
+</style>
+</head>
+
+<body>
+
+<header>
+🌳 Digital Banshawali
+<label style="font-weight:normal">
+<input type="checkbox" checked onchange="togglePhoto(this)"> फोटो
+</label>
+
+<button onclick="printTree()">Print / PDF</button>
+<button onclick="backup()">Backup</button>
+<button onclick="restore()">Restore</button>
+<button onclick="reports()">Reports</button>
+
+<input id="restoreFile" type="file" hidden>
+</header>
+
+<div id="treeWrap">
+  <div id="tree"></div>
+</div>
+
+<script>
+/* ---------------- DATA ---------------- */
+let persons = JSON.parse(localStorage.getItem("banshawali")||"{}");
+
+if(Object.keys(persons).length===0){
+  let id="p1";
+  persons[id]={id,name:"धर्मदत्त पौडेल",status:"alive",children:[]};
+  localStorage.setItem("banshawali",JSON.stringify(persons));
+}
+
+/* ---------------- TREE ---------------- */
+function render(){
+  tree.innerHTML="";
+  Object.values(persons).forEach(p=>{
+    let d=document.createElement("div");
+    d.className="node "+(p.status==="dead"?"dead":"alive");
+    d.innerHTML=`${p.name}`;
+    d.onclick=()=>alert("Public view only");
+    tree.appendChild(d);
+  });
+}
+render();
+
+/* ---------------- ACTIONS ---------------- */
+function togglePhoto(cb){
+  tree.classList.toggle("hide-photo",!cb.checked);
+}
+
+function printTree(){
+  document.body.classList.add("hide-photo");
+  window.print();
+  document.body.classList.remove("hide-photo");
+}
+
+function backup(){
+  let blob=new Blob([JSON.stringify(persons,null,2)],{type:"application/json"});
+  let a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="banshawali_backup.json";
+  a.click();
+}
+
+function restore(){
+  restoreFile.click();
+  restoreFile.onchange=e=>{
+    let r=new FileReader();
+    r.onload=x=>{
+      persons=JSON.parse(x.target.result);
+      localStorage.setItem("banshawali",JSON.stringify(persons));
+      render();
+    };
+    r.readAsText(e.target.files[0]);
+  };
+}
+
+function reports(){
+  let total=Object.keys(persons).length;
+  let alive=Object.values(persons).filter(p=>p.status!=="dead").length;
+  alert(`कुल व्यक्ति: ${total}\nजीवित: ${alive}`);
+}
+
+/* ---------------- HASH SHARE ---------------- */
+if(location.hash){
+  let id=location.hash.replace("#","");
+  if(persons[id]) alert("Share link: "+persons[id].name);
+}
+
+console.log("Digital Banshawali loaded OK");
+</script>
+
+</body>
+</html>
