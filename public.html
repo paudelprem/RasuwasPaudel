@@ -28,6 +28,9 @@ button{
   border:1px solid #cbb79f;
   border-radius:10px;
   background:#fff;
+
+  cursor:pointer;            /* ⚡ FIXED */
+  pointer-events:auto;       /* ⚡ FIXED */
 }
 .node.alive::after{content:" 🟢"}
 .node.dead::after{content:" ⚫"}
@@ -55,45 +58,59 @@ button{
 let persons = JSON.parse(localStorage.getItem("banshawali")||"{}");
 
 if(Object.keys(persons).length===0){
-  document.getElementById("tree").innerHTML =
-   "<p>हाल सार्वजनिक गर्न मिल्ने डाटा छैन ।</p>";
+  tree.innerHTML = "<p>हाल सार्वजनिक गर्न मिल्ने डाटा छैन ।</p>";
 }
 
 /* RENDER TREE */
 function render(){
-  tree.innerHTML="";
+  tree.innerHTML = "";
+
   Object.values(persons).forEach(p=>{
-    let d=document.createElement("div");
-    d.className="node "+(p.status==="dead"?"dead":"alive");
-    d.setAttribute("data-id", p.id);            // ★ FIX ADDED
-    d.innerText = p.name || "-";
-    d.onclick = ()=> location.hash = p.id;      // click works
+    let d = document.createElement("div");
+    d.className = "node " + (p.status==="dead"?"dead":"alive");
+    d.setAttribute("data-id", p.id);      // ✔ essential
+    d.textContent = p.name || "-";        // ✔ clean text
+
+    /* CLICK WORKS PERFECT */
+    d.addEventListener("click", ()=>{
+      location.hash = p.id;
+      highlight(p.id);
+    });
+
     tree.appendChild(d);
   });
 }
 render();
+
+/* HIGHLIGHT FUNCTION */
+function highlight(id){
+  document.querySelectorAll(".node")
+    .forEach(n=>n.style.outline="");
+
+  let node = document.querySelector(`[data-id='${id}']`);
+  if(node){
+    node.style.outline = "4px solid green";
+    node.scrollIntoView({behavior:"smooth",block:"center"});
+  }
+}
 
 /* SEARCH */
 function searchName(q){
   document.querySelectorAll(".node").forEach(n=>{
     n.style.outline="";
 
-    if(q && n.innerText.includes(q)){
+    if(q && n.textContent.includes(q)){
       n.style.outline="3px solid orange";
       n.scrollIntoView({behavior:"smooth",block:"center"});
     }
   });
 }
 
-/* SHARE LINK (hash highlight) */
-window.addEventListener("load",()=>{
+/* LOAD SHARE LINK (HASH) */
+window.addEventListener("load", ()=>{
   if(location.hash){
     let id = location.hash.replace("#","");
-    let node = document.querySelector(`[data-id='${id}']`);  // ★ FIXED: find by data-id
-    if(node){
-      node.style.outline="4px solid green";
-      node.scrollIntoView({behavior:"smooth",block:"center"});
-    }
+    highlight(id);
   }
 });
 </script>
